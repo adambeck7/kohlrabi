@@ -1,0 +1,10 @@
+[build]
+  command = "npx kohlrabi build"
+  publish = "dist"
+
+# Handle SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+

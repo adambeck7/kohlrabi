@@ -1,0 +1,653 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Kohlrabi API",
+    "description": "This is an example API specification to demonstrate the Kohlrabi Docs renderer.\n\n## Getting Started\n\nReplace this file with your own OpenAPI specification to generate beautiful documentation.\n\n## Features\n\n- **Automatic navigation** - Endpoints are grouped by tags\n- **Code examples** - cURL, JavaScript, and Python\n- **Response previews** - See example responses\n- **Mobile responsive** - Works on all devices",
+    "version": "1.0.0",
+    "x-api-family": [
+      { "name": "Example API", "url": "/", "current": true }
+    ]
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com",
+      "description": "Production"
+    },
+    {
+      "url": "https://staging-api.example.com",
+      "description": "Staging"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Users",
+      "description": "User management endpoints for creating, reading, updating, and deleting user accounts."
+    },
+    {
+      "name": "Posts",
+      "description": "Blog post management endpoints."
+    }
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "List all users",
+        "description": "Returns a paginated list of all users in the system. Results are sorted by creation date, newest first.",
+        "operationId": "listUsers",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of users to return",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "maximum": 100,
+              "example": 10
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Number of users to skip for pagination",
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "example": 0
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter users by account status",
+            "schema": {
+              "type": "string",
+              "enum": ["active", "inactive", "pending"],
+              "example": "active"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated list of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "users": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "description": "Total number of users matching the query",
+                      "example": 142
+                    },
+                    "limit": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "offset": {
+                      "type": "integer",
+                      "example": 0
+                    }
+                  }
+                },
+                "example": {
+                  "users": [
+                    {
+                      "id": "usr_1a2b3c4d5e6f",
+                      "email": "alice@example.com",
+                      "name": "Alice Johnson",
+                      "role": "admin",
+                      "status": "active",
+                      "createdAt": "2024-01-15T09:30:00Z"
+                    },
+                    {
+                      "id": "usr_7g8h9i0j1k2l",
+                      "email": "bob@example.com",
+                      "name": "Bob Smith",
+                      "role": "user",
+                      "status": "active",
+                      "createdAt": "2024-02-20T14:45:00Z"
+                    }
+                  ],
+                  "total": 142,
+                  "limit": 10,
+                  "offset": 0
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing authentication token"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Users"],
+        "summary": "Create a new user",
+        "description": "Creates a new user account. A welcome email will be sent to the provided email address.",
+        "operationId": "createUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              },
+              "example": {
+                "email": "newuser@example.com",
+                "name": "New User",
+                "role": "user"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                },
+                "example": {
+                  "id": "usr_3m4n5o6p7q8r",
+                  "email": "newuser@example.com",
+                  "name": "New User",
+                  "role": "user",
+                  "status": "pending",
+                  "createdAt": "2024-12-24T10:00:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request - missing required fields or validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "message": "Invalid email format",
+                    "field": "email"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - User with this email already exists"
+          }
+        }
+      }
+    },
+    "/users/{userId}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get a user by ID",
+        "description": "Returns detailed information about a single user by their unique identifier.",
+        "operationId": "getUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the user",
+            "schema": {
+              "type": "string",
+              "example": "usr_1a2b3c4d5e6f"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                },
+                "example": {
+                  "id": "usr_1a2b3c4d5e6f",
+                  "email": "alice@example.com",
+                  "name": "Alice Johnson",
+                  "role": "admin",
+                  "status": "active",
+                  "createdAt": "2024-01-15T09:30:00Z",
+                  "lastLoginAt": "2024-12-23T16:20:00Z"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "User with ID 'usr_invalid' not found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Users"],
+        "summary": "Update a user",
+        "description": "Updates an existing user's information. Only provided fields will be updated.",
+        "operationId": "updateUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the user",
+            "schema": {
+              "type": "string",
+              "example": "usr_1a2b3c4d5e6f"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              },
+              "example": {
+                "name": "Alice Johnson-Smith",
+                "role": "admin"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                },
+                "example": {
+                  "id": "usr_1a2b3c4d5e6f",
+                  "email": "alice@example.com",
+                  "name": "Alice Johnson-Smith",
+                  "role": "admin",
+                  "status": "active",
+                  "createdAt": "2024-01-15T09:30:00Z",
+                  "updatedAt": "2024-12-24T11:00:00Z"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Users"],
+        "summary": "Delete a user",
+        "description": "Permanently deletes a user account. This action cannot be undone.",
+        "operationId": "deleteUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the user to delete",
+            "schema": {
+              "type": "string",
+              "example": "usr_1a2b3c4d5e6f"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User deleted successfully"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/posts": {
+      "get": {
+        "tags": ["Posts"],
+        "summary": "List all posts",
+        "description": "Returns a list of blog posts. Supports filtering by author and status.",
+        "operationId": "listPosts",
+        "parameters": [
+          {
+            "name": "authorId",
+            "in": "query",
+            "description": "Filter posts by author ID",
+            "schema": {
+              "type": "string",
+              "example": "usr_1a2b3c4d5e6f"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter posts by publication status",
+            "schema": {
+              "type": "string",
+              "enum": ["draft", "published", "archived"],
+              "example": "published"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of posts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "posts": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Post"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "posts": [
+                    {
+                      "id": "post_abc123",
+                      "title": "Getting Started with Kohlrabi",
+                      "slug": "getting-started-openapi",
+                      "excerpt": "Learn how to document your REST APIs using OpenAPI specifications.",
+                      "authorId": "usr_1a2b3c4d5e6f",
+                      "status": "published",
+                      "publishedAt": "2024-12-20T12:00:00Z"
+                    },
+                    {
+                      "id": "post_def456",
+                      "title": "API Design Best Practices",
+                      "slug": "api-design-best-practices",
+                      "excerpt": "Tips and tricks for designing intuitive and maintainable APIs.",
+                      "authorId": "usr_7g8h9i0j1k2l",
+                      "status": "published",
+                      "publishedAt": "2024-12-18T09:30:00Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Posts"],
+        "summary": "Create a new post",
+        "description": "Creates a new blog post. Posts are created as drafts by default.",
+        "operationId": "createPost",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePostRequest"
+              },
+              "example": {
+                "title": "My New Blog Post",
+                "content": "This is the content of my new blog post. It supports **markdown** formatting.",
+                "status": "draft"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Post created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Post"
+                },
+                "example": {
+                  "id": "post_ghi789",
+                  "title": "My New Blog Post",
+                  "slug": "my-new-blog-post",
+                  "content": "This is the content of my new blog post. It supports **markdown** formatting.",
+                  "authorId": "usr_1a2b3c4d5e6f",
+                  "status": "draft",
+                  "createdAt": "2024-12-24T10:30:00Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the user",
+            "example": "usr_1a2b3c4d5e6f"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User's email address",
+            "example": "user@example.com"
+          },
+          "name": {
+            "type": "string",
+            "description": "User's full name",
+            "example": "John Doe"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["admin", "user", "viewer"],
+            "description": "User's role in the system",
+            "example": "user"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "inactive", "pending"],
+            "description": "Account status",
+            "example": "active"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the user account was created",
+            "example": "2024-01-15T09:30:00Z"
+          }
+        }
+      },
+      "CreateUserRequest": {
+        "type": "object",
+        "required": ["email", "name"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User's email address (must be unique)",
+            "example": "newuser@example.com"
+          },
+          "name": {
+            "type": "string",
+            "description": "User's full name",
+            "example": "Jane Doe"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["admin", "user", "viewer"],
+            "description": "User's role (defaults to 'user')",
+            "default": "user",
+            "example": "user"
+          }
+        }
+      },
+      "UpdateUserRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "User's full name",
+            "example": "Jane Smith"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["admin", "user", "viewer"],
+            "description": "User's role",
+            "example": "admin"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "inactive"],
+            "description": "Account status",
+            "example": "active"
+          }
+        }
+      },
+      "Post": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the post",
+            "example": "post_abc123"
+          },
+          "title": {
+            "type": "string",
+            "description": "Post title",
+            "example": "My Blog Post"
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL-friendly slug",
+            "example": "my-blog-post"
+          },
+          "content": {
+            "type": "string",
+            "description": "Post content (markdown supported)",
+            "example": "This is the post content..."
+          },
+          "excerpt": {
+            "type": "string",
+            "description": "Short summary of the post",
+            "example": "A brief introduction to the topic."
+          },
+          "authorId": {
+            "type": "string",
+            "description": "ID of the post author",
+            "example": "usr_1a2b3c4d5e6f"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "published", "archived"],
+            "description": "Publication status",
+            "example": "published"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the post was published",
+            "example": "2024-12-20T12:00:00Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the post was created",
+            "example": "2024-12-19T10:00:00Z"
+          }
+        }
+      },
+      "CreatePostRequest": {
+        "type": "object",
+        "required": ["title", "content"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Post title",
+            "example": "My New Post"
+          },
+          "content": {
+            "type": "string",
+            "description": "Post content (markdown supported)",
+            "example": "This is the content of my post."
+          },
+          "excerpt": {
+            "type": "string",
+            "description": "Optional short summary",
+            "example": "A quick overview of the post."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "published"],
+            "description": "Initial status (defaults to draft)",
+            "default": "draft",
+            "example": "draft"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code",
+                "example": "VALIDATION_ERROR"
+              },
+              "message": {
+                "type": "string",
+                "description": "Human-readable error message",
+                "example": "Invalid request parameters"
+              },
+              "field": {
+                "type": "string",
+                "description": "Field that caused the error (if applicable)",
+                "example": "email"
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "JWT authentication token"
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="API Documentation - Interactive reference for REST API endpoints, request/response examples, and authentication.">
+  <title>API Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Mobile Menu Toggle -->
+  <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle navigation">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- Left Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="api-title-wrapper" id="apiTitleWrapper">
+        <h1 class="api-title" id="apiTitle">API Documentation</h1>
+      </div>
+      <div class="api-version" id="apiVersion"></div>
+    </div>
+    
+    <div class="server-selector">
+      <label for="serverSelect">Environment</label>
+      <select id="serverSelect"></select>
+    </div>
+
+    <nav class="nav" id="nav">
+      <!-- Navigation will be populated by JavaScript -->
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content" id="mainContent">
+    <!-- API Overview Section - Full width, no right sidebar -->
+    <section class="overview-section" id="overview">
+      <div class="overview-content">
+        <h1 class="section-title">Overview</h1>
+        <div class="description" id="apiDescription"></div>
+      </div>
+    </section>
+
+    <!-- Endpoints will be populated by JavaScript -->
+    <div id="endpoints"></div>
+
+    <!-- Webhooks Section -->
+    <div id="webhooks"></div>
+  </main>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
+
