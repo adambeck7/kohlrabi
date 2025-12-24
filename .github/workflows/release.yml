@@ -29,6 +29,18 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           npm version $VERSION --no-git-tag-version
 
+      - name: Debug npm configuration
+        run: |
+          echo "Checking npm configuration..."
+          echo "NODE_AUTH_TOKEN is set: $([ -n "$NODE_AUTH_TOKEN" ] && echo 'yes' || echo 'no')"
+          echo "OIDC token available: $([ -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ] && echo 'yes' || echo 'no')"
+          if [ -f ~/.npmrc ]; then
+            echo "~/.npmrc exists:"
+            cat ~/.npmrc | sed 's/authToken=.*/authToken=***/' || true
+          else
+            echo "~/.npmrc does not exist"
+          fi
+
       - name: Publish to npm
-        run: npm publish --provenance --access public
+        run: npm publish --access public
 
