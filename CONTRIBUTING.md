@@ -251,6 +251,26 @@ We follow [Semantic Versioning](https://semver.org/):
 - Ensure the package name isn't taken
 - For scoped packages, use `--access public`
 
+### npm publish requires OTP (one-time password)
+
+If you see `npm error code EOTP`, this means npm is requiring 2FA authentication:
+
+1. **Regenerate your token as an Automation token:**
+   - Go to https://www.npmjs.com → Your avatar → **Access Tokens**
+   - Delete the old token
+   - Click **Generate New Token** → **Automation** (NOT Classic Token)
+   - Copy the new token
+   - Update the `NPM_TOKEN` secret in GitHub
+
+2. **Check your npm account 2FA settings:**
+   - Go to https://www.npmjs.com/settings/[your-username]/profile
+   - Under "Two-Factor Authentication", ensure automation tokens are allowed
+   - If 2FA is set to "Authorization" mode, automation tokens should still work without OTP
+
+3. **Verify the token type:**
+   - Automation tokens (type: `automation`) don't require OTP
+   - Classic tokens with 2FA enabled will require OTP
+
 ### GitHub Action not triggering
 
 - Make sure the release is **published**, not just a draft
