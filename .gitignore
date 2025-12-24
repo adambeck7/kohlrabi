@@ -6,9 +6,7 @@ package-lock.json
 dist/
 
 # User-specific files (not part of the package)
-public/swagger.json
 public/openapi.json
-swagger.json
 openapi.json
 
 # Keep the example
