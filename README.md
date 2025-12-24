@@ -1,6 +1,6 @@
 # Kohlrabi Docs
 
-Why Kohlrabi? Broccoli was taken. Beautiful, modern API documentation from OpenAPI/Swagger specs. Zero config — just add your `swagger.json` and go.
+Why Kohlrabi? Broccoli was taken. Modern API documentation from OpenAPI/Swagger specs. Just add your `swagger.json` and go. I've tested with numerous public OpenAPI specs and all rendered perfectly, but if you hit any problems, feel free to open an issue.
 
 ![License](https://img.shields.io/npm/l/kohlrabi)
 ![npm version](https://img.shields.io/npm/v/kohlrabi)
@@ -10,11 +10,11 @@ Why Kohlrabi? Broccoli was taken. Beautiful, modern API documentation from OpenA
 - **Zero config** — Just add your OpenAPI spec and run
 - **Code examples** — Auto-generated cURL, JavaScript, and Python snippets
 - **API switcher** — Easy navigation between multiple API docs
-- **Lightning fast** — Built on Vite for instant hot reload during development
+- **Fast** — Built on Vite for instant hot reload during development
 
 ## Quick Start
 
-### Option 1: npx (No Installation)
+### Option 1: npx (No Installation, for local development)
 
 ```bash
 # Create a new project

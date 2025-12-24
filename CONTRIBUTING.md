@@ -198,11 +198,11 @@ Check availability: `npm view <package-name>`
 {
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/kohlrabi.git"
+    "url": "https://github.com/adambeck7/kohlrabi.git"
   },
-  "homepage": "https://github.com/your-org/kohlrabi#readme",
+  "homepage": "https://github.com/adambeck7/kohlrabi#readme",
   "bugs": {
-    "url": "https://github.com/your-org/kohlrabi/issues"
+    "url": "https://github.com/adambeck7/kohlrabi/issues"
   }
 }
 ```
