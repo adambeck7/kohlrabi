@@ -19,7 +19,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          # NOT using registry-url - let npm handle OIDC natively
+
+      - name: Upgrade npm to latest
+        run: npm install -g npm@latest
 
       - name: Install dependencies
         run: npm ci
@@ -29,17 +32,12 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           npm version $VERSION --no-git-tag-version
 
-      - name: Debug OIDC and npm config
+      - name: Debug OIDC
         run: |
-          echo "=== Environment ==="
-          echo "OIDC Request URL: $ACTIONS_ID_TOKEN_REQUEST_URL"
-          echo "OIDC Token set: $([ -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ] && echo 'yes' || echo 'no')"
-          echo ""
-          echo "=== npmrc contents ==="
-          cat "$NPM_CONFIG_USERCONFIG" 2>/dev/null || echo "No npmrc found"
-          echo ""
-          echo "=== npm config ==="
-          npm config list
+          echo "npm version: $(npm --version)"
+          echo "OIDC Request URL set: $([ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ] && echo 'yes' || echo 'no')"
+          echo "OIDC Token available: $([ -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ] && echo 'yes' || echo 'no')"
+          echo "NODE_AUTH_TOKEN set: $([ -n "$NODE_AUTH_TOKEN" ] && echo 'yes' || echo 'no')"
 
       - name: Publish to npm
         run: npm publish --provenance --access public
