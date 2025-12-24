@@ -177,20 +177,32 @@ Update `package.json` with your chosen name:
 
 Check availability: `npm view <package-name>`
 
-### 3. Generate npm Access Token
+### 3. Set Up npm Trusted Publishing (Recommended)
+
+**Option A: Trusted Publishing with GitHub (OIDC) - Recommended**
+
+This is more secure and doesn't require storing tokens:
+
+1. Go to https://www.npmjs.com → Click your avatar → **Access Tokens**
+2. Click **Add GitHub** under "Trusted Publishers"
+3. Select your GitHub organization/user and repository
+4. Click **Authorize**
+5. The workflow will automatically authenticate using OIDC - no token needed!
+
+**Option B: Classic Token (Legacy)**
+
+If you prefer using a token:
 
 1. Go to https://www.npmjs.com → Click your avatar → **Access Tokens**
 2. Click **Generate New Token** → **Classic Token**
 3. Select **Automation** (for CI/CD)
 4. Copy the token (you won't see it again!)
-
-### 4. Add Token to GitHub
-
-1. Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**
-2. Click **New repository secret**
-3. Name: `NPM_TOKEN`
-4. Value: Paste your npm token
-5. Click **Add secret**
+5. Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**
+6. Click **New repository secret**
+7. Name: `NPM_TOKEN`
+8. Value: Paste your npm token
+9. Click **Add secret**
+10. Update the workflow to use `NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}` in the publish step
 
 ### 5. Update package.json URLs
 
