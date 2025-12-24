@@ -29,17 +29,14 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           npm version $VERSION --no-git-tag-version
 
-      - name: Debug npm configuration
+      - name: Configure npm for OIDC
         run: |
-          echo "Checking npm configuration..."
-          echo "NODE_AUTH_TOKEN is set: $([ -n "$NODE_AUTH_TOKEN" ] && echo 'yes' || echo 'no')"
-          echo "OIDC token available: $([ -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ] && echo 'yes' || echo 'no')"
-          if [ -f ~/.npmrc ]; then
-            echo "~/.npmrc exists:"
-            cat ~/.npmrc | sed 's/authToken=.*/authToken=***/' || true
-          else
-            echo "~/.npmrc does not exist"
+          # Remove token-based auth from .npmrc - OIDC will be used instead
+          if [ -f "$NPM_CONFIG_USERCONFIG" ]; then
+            sed -i '/_authToken/d' "$NPM_CONFIG_USERCONFIG"
           fi
+          # Ensure registry is set
+          npm config set registry https://registry.npmjs.org/
 
       - name: Publish to npm
         run: npm publish --provenance --access public
