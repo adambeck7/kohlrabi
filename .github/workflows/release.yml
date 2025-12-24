@@ -29,14 +29,17 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           npm version $VERSION --no-git-tag-version
 
-      - name: Configure npm for OIDC
+      - name: Debug OIDC and npm config
         run: |
-          # Remove token-based auth from .npmrc - OIDC will be used instead
-          if [ -f "$NPM_CONFIG_USERCONFIG" ]; then
-            sed -i '/_authToken/d' "$NPM_CONFIG_USERCONFIG"
-          fi
-          # Ensure registry is set
-          npm config set registry https://registry.npmjs.org/
+          echo "=== Environment ==="
+          echo "OIDC Request URL: $ACTIONS_ID_TOKEN_REQUEST_URL"
+          echo "OIDC Token set: $([ -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ] && echo 'yes' || echo 'no')"
+          echo ""
+          echo "=== npmrc contents ==="
+          cat "$NPM_CONFIG_USERCONFIG" 2>/dev/null || echo "No npmrc found"
+          echo ""
+          echo "=== npm config ==="
+          npm config list
 
       - name: Publish to npm
         run: npm publish --provenance --access public
