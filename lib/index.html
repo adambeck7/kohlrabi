@@ -31,6 +31,75 @@
       <select id="serverSelect"></select>
     </div>
 
+    <!-- Authentication Section -->
+    <div class="auth-section" id="authSection">
+      <div class="auth-header" id="authHeader">
+        <span class="auth-title">Authentication</span>
+        <svg class="auth-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </div>
+      <div class="auth-content" id="authContent">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-auth-tab="token">Bearer Token</button>
+          <button class="auth-tab" data-auth-tab="oauth">OAuth2</button>
+        </div>
+        
+        <!-- Bearer Token Tab -->
+        <div class="auth-tab-content active" id="authTabToken">
+          <div class="auth-field">
+            <label for="bearerToken">Access Token</label>
+            <input type="password" id="bearerToken" placeholder="Enter your bearer token">
+            <button class="auth-toggle-visibility" data-target="bearerToken" aria-label="Toggle visibility">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <!-- OAuth2 Tab -->
+        <div class="auth-tab-content" id="authTabOauth">
+          <div class="auth-field">
+            <label for="tokenUrl">Token URL</label>
+            <input type="text" id="tokenUrl" placeholder="https://auth.example.com/oauth/token">
+          </div>
+          <div class="auth-field">
+            <label for="clientId">Client ID</label>
+            <input type="text" id="clientId" placeholder="Your client ID">
+          </div>
+          <div class="auth-field">
+            <label for="clientSecret">Client Secret</label>
+            <input type="password" id="clientSecret" placeholder="Your client secret">
+            <button class="auth-toggle-visibility" data-target="clientSecret" aria-label="Toggle visibility">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <div class="auth-field">
+            <label for="authScope">Scope (optional)</label>
+            <input type="text" id="authScope" placeholder="read write">
+          </div>
+          <div class="auth-scope-help" id="scopeHelp" style="display: none;"></div>
+          <button class="auth-generate-btn" id="generateTokenBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+            </svg>
+            Generate Token
+          </button>
+          <div class="auth-status" id="authStatus"></div>
+        </div>
+        
+        <div class="auth-active-token" id="activeTokenDisplay">
+          <div class="auth-active-label">Active Token</div>
+          <div class="auth-active-value" id="activeTokenValue">Not configured</div>
+        </div>
+      </div>
+    </div>
+
     <nav class="nav" id="nav">
       <!-- Navigation will be populated by JavaScript -->
     </nav>

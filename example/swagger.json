@@ -638,6 +638,20 @@
       }
     },
     "securitySchemes": {
+      "OAuth2": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "https://auth.example.com/oauth/token",
+            "scopes": {
+              "users:read": "Read access to user data",
+              "users:write": "Write access to user data",
+              "posts:read": "Read access to posts",
+              "posts:write": "Write access to posts"
+            }
+          }
+        }
+      },
       "BearerAuth": {
         "type": "http",
         "scheme": "bearer",
@@ -647,7 +661,7 @@
   },
   "security": [
     {
-      "BearerAuth": []
+      "OAuth2": ["users:read", "posts:read"]
     }
   ]
 }
