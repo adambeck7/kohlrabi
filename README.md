@@ -80,10 +80,38 @@ my-api-docs/
 
 The CLI automatically finds your spec in these locations (in order):
 
+**JSON files:**
 1. `./public/swagger.json` ✅ recommended
 2. `./swagger.json`
 3. `./public/openapi.json`
 4. `./openapi.json`
+
+**YAML files (automatically converted to JSON):**
+5. `./public/swagger.yaml` or `./public/swagger.yml`
+6. `./swagger.yaml` or `./swagger.yml`
+7. `./public/openapi.yaml` or `./public/openapi.yml`
+8. `./openapi.yaml` or `./openapi.yml`
+
+> **Note:** YAML files are automatically converted to JSON during build. If you have both a YAML and JSON file with the same name, the JSON file will be used.
+
+### Converting YAML to JSON Manually
+
+If you prefer to convert YAML to JSON yourself, you can use:
+
+**Using Node.js:**
+```bash
+npx js-yaml swagger.yaml > swagger.json
+```
+
+**Using Python:**
+```bash
+pip install pyyaml
+python -c "import yaml, json; print(json.dumps(yaml.safe_load(open('swagger.yaml')), indent=2))" > swagger.json
+```
+
+**Using online tools:**
+- [Swagger Editor](https://editor.swagger.io/) - Open your YAML and export as JSON
+- [Redocly](https://redocly.com/) - Many renderers allow downloading as JSON
 
 ## API Switcher
 

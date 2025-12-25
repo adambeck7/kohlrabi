@@ -177,20 +177,32 @@ Update `package.json` with your chosen name:
 
 Check availability: `npm view <package-name>`
 
-### 3. Generate npm Access Token
+### 3. Set Up npm Trusted Publishing (Recommended)
+
+**Option A: Trusted Publishing with GitHub (OIDC) - Recommended**
+
+This is more secure and doesn't require storing tokens:
+
+1. Go to https://www.npmjs.com → Click your avatar → **Access Tokens**
+2. Click **Add GitHub** under "Trusted Publishers"
+3. Select your GitHub organization/user and repository
+4. Click **Authorize**
+5. The workflow will automatically authenticate using OIDC - no token needed!
+
+**Option B: Classic Token (Legacy)**
+
+If you prefer using a token:
 
 1. Go to https://www.npmjs.com → Click your avatar → **Access Tokens**
 2. Click **Generate New Token** → **Classic Token**
 3. Select **Automation** (for CI/CD)
 4. Copy the token (you won't see it again!)
-
-### 4. Add Token to GitHub
-
-1. Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**
-2. Click **New repository secret**
-3. Name: `NPM_TOKEN`
-4. Value: Paste your npm token
-5. Click **Add secret**
+5. Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**
+6. Click **New repository secret**
+7. Name: `NPM_TOKEN`
+8. Value: Paste your npm token
+9. Click **Add secret**
+10. Update the workflow to use `NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}` in the publish step
 
 ### 5. Update package.json URLs
 
@@ -250,6 +262,26 @@ We follow [Semantic Versioning](https://semver.org/):
 - Check that `NPM_TOKEN` secret is set correctly
 - Ensure the package name isn't taken
 - For scoped packages, use `--access public`
+
+### npm publish requires OTP (one-time password)
+
+If you see `npm error code EOTP`, this means npm is requiring 2FA authentication:
+
+1. **Regenerate your token as an Automation token:**
+   - Go to https://www.npmjs.com → Your avatar → **Access Tokens**
+   - Delete the old token
+   - Click **Generate New Token** → **Automation** (NOT Classic Token)
+   - Copy the new token
+   - Update the `NPM_TOKEN` secret in GitHub
+
+2. **Check your npm account 2FA settings:**
+   - Go to https://www.npmjs.com/settings/[your-username]/profile
+   - Under "Two-Factor Authentication", ensure automation tokens are allowed
+   - If 2FA is set to "Authorization" mode, automation tokens should still work without OTP
+
+3. **Verify the token type:**
+   - Automation tokens (type: `automation`) don't require OTP
+   - Classic tokens with 2FA enabled will require OTP
 
 ### GitHub Action not triggering
 
