@@ -4,7 +4,7 @@
   "description": "Beautiful, modern API documentation from OpenAPI specs. Zero config, just add your swagger.json.",
   "type": "module",
   "bin": {
-    "kohlrabi": "./bin/cli.js"
+    "kohlrabi": "bin/cli.js"
   },
   "files": [
     "bin",
@@ -28,7 +28,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/adambeck7/kohlrabi.git"
+    "url": "git+https://github.com/adambeck7/kohlrabi.git"
   },
   "homepage": "",
   "bugs": {
