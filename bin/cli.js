@@ -7,9 +7,9 @@
 
 import { createServer, build } from 'vite';
 import { fileURLToPath } from 'url';
-import { dirname, resolve, join } from 'path';
+import { dirname, resolve, join, isAbsolute } from 'path';
 import { existsSync, copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
-import yaml from 'js-yaml';
+import SwaggerParser from '@apidevtools/swagger-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,8 +20,41 @@ const libDir = resolve(__dirname, '../lib');
 // User's current working directory
 const userDir = process.cwd();
 
+// Parse CLI arguments for --spec flag
+function parseArgs(args) {
+  const result = { spec: null, command: null };
+  
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    
+    if (arg === '--spec' || arg === '-s') {
+      result.spec = args[i + 1];
+      i++; // Skip next arg
+    } else if (arg.startsWith('--spec=')) {
+      result.spec = arg.split('=')[1];
+    } else if (arg.startsWith('-s=')) {
+      result.spec = arg.split('=')[1];
+    } else if (!arg.startsWith('-') && !result.command) {
+      result.command = arg;
+    }
+  }
+  
+  return result;
+}
+
 // Check for swagger/openapi files (JSON or YAML)
-function findSwaggerFile() {
+function findSwaggerFile(specPath = null) {
+  // If explicit path provided, use it
+  if (specPath) {
+    const resolvedPath = isAbsolute(specPath) ? specPath : join(userDir, specPath);
+    if (existsSync(resolvedPath)) {
+      return resolvedPath;
+    }
+    console.error(`\x1b[31m✖ Spec file not found: ${resolvedPath}\x1b[0m`);
+    process.exit(1);
+  }
+  
+  // Otherwise, search common locations
   const locations = [
     // JSON files
     join(userDir, 'public', 'swagger.json'),
@@ -47,35 +80,37 @@ function findSwaggerFile() {
   return null;
 }
 
-// Convert YAML to JSON if needed
-function ensureJsonSpec(specPath) {
-  const isYaml = specPath.endsWith('.yaml') || specPath.endsWith('.yml');
-  
-  if (!isYaml) {
-    return specPath; // Already JSON
+// Bundle and dereference the OpenAPI spec (resolves all $refs including external files)
+async function bundleSpec(specPath) {
+  try {
+    console.log(`\x1b[33m→\x1b[0m Bundling spec and resolving \$refs...`);
+    
+    // Use swagger-parser to dereference all $refs (including external file refs)
+    const bundled = await SwaggerParser.bundle(specPath);
+    
+    // Write bundled spec to .kohlrabi/ for serving (named swagger.json for consistency)
+    const bundledPath = join(userDir, '.kohlrabi', 'swagger.json');
+    const bundledDir = dirname(bundledPath);
+    
+    if (!existsSync(bundledDir)) {
+      mkdirSync(bundledDir, { recursive: true });
+    }
+    
+    writeFileSync(bundledPath, JSON.stringify(bundled, null, 2));
+    console.log(`\x1b[32m✓\x1b[0m Bundled spec with all \$refs resolved`);
+    
+    return bundledPath;
+  } catch (error) {
+    console.error(`\x1b[31m✖ Failed to bundle spec: ${error.message}\x1b[0m`);
+    console.error('\nThis often happens when external $refs cannot be resolved.');
+    console.error('Make sure all referenced files exist and paths are correct.\n');
+    process.exit(1);
   }
-  
-  // Read YAML and convert to JSON
-  const yamlContent = readFileSync(specPath, 'utf8');
-  const jsonContent = yaml.load(yamlContent);
-  
-  // Write to JSON file in same directory (replace .yaml/.yml with .json)
-  const jsonPath = specPath.replace(/\.ya?ml$/, '.json');
-  
-  // Only write if JSON file doesn't already exist (don't overwrite user's file)
-  if (!existsSync(jsonPath)) {
-    writeFileSync(jsonPath, JSON.stringify(jsonContent, null, 2));
-    console.log(`\x1b[33m→\x1b[0m Converted YAML to JSON: ${jsonPath}`);
-  } else {
-    console.log(`\x1b[33m→\x1b[0m Using existing JSON file: ${jsonPath}`);
-  }
-  
-  return jsonPath;
 }
 
 // Vite configuration
-function createViteConfig(command) {
-  const swaggerPath = findSwaggerFile();
+async function createViteConfig(command, specArg = null) {
+  const swaggerPath = findSwaggerFile(specArg);
   
   if (!swaggerPath) {
     console.error('\x1b[31m✖ No swagger.json/openapi.json or swagger.yaml/openapi.yaml found!\x1b[0m');
@@ -88,21 +123,17 @@ function createViteConfig(command) {
     console.error('  • ./swagger.yaml');
     console.error('  • ./public/openapi.yaml');
     console.error('  • ./openapi.yaml');
+    console.error('\nOr specify a custom path with: kohlrabi serve --spec ./path/to/your-spec.yaml');
     process.exit(1);
   }
   
-  // Convert YAML to JSON if needed
-  const jsonPath = ensureJsonSpec(swaggerPath);
-  
   console.log(`\x1b[32m✓\x1b[0m Using spec: ${swaggerPath}`);
   
-  // Determine public dir based on swagger location
-  const publicDir = swaggerPath.includes('/public/') 
-    ? join(userDir, 'public')
-    : userDir;
+  // Bundle the spec (resolves all external $refs)
+  const bundledPath = await bundleSpec(swaggerPath);
   
-  // Store jsonPath for use in plugin closure
-  const finalJsonPath = jsonPath;
+  // Use .kohlrabi directory as public dir to serve bundled spec
+  const publicDir = join(userDir, '.kohlrabi');
   
   return {
     root: libDir,
@@ -122,19 +153,19 @@ function createViteConfig(command) {
         if (!existsSync(destDir)) {
           mkdirSync(destDir, { recursive: true });
         }
-        // Use the JSON path (converted from YAML if needed)
-        copyFileSync(finalJsonPath, join(destDir, 'swagger.json'));
-        console.log('\x1b[32m✓\x1b[0m Copied swagger.json to dist/');
+        // Use the bundled spec
+        copyFileSync(bundledPath, join(destDir, 'swagger.json'));
+        console.log('\x1b[32m✓\x1b[0m Copied bundled swagger.json to dist/');
       }
     }] : [],
   };
 }
 
 // Commands
-async function serve() {
+async function serve(specArg) {
   console.log('\n\x1b[36m🚀 Starting API Docs development server...\x1b[0m\n');
   
-  const config = createViteConfig('serve');
+  const config = await createViteConfig('serve', specArg);
   const server = await createServer(config);
   await server.listen();
   
@@ -142,10 +173,10 @@ async function serve() {
   console.log('\n\x1b[2mPress Ctrl+C to stop\x1b[0m\n');
 }
 
-async function buildDocs() {
+async function buildDocs(specArg) {
   console.log('\n\x1b[36m📦 Building API Docs for production...\x1b[0m\n');
   
-  const config = createViteConfig('build');
+  const config = await createViteConfig('build', specArg);
   await build(config);
   
   console.log('\n\x1b[32m✓ Build complete!\x1b[0m Output: ./dist/\n');
@@ -153,46 +184,61 @@ async function buildDocs() {
 
 function showHelp() {
   console.log(`
-\x1b[Kohlrabi\x1b[0m - Beautiful API documentation from OpenAPI specs
+\x1b[36mKohlrabi\x1b[0m - Beautiful API documentation from OpenAPI specs
 
 \x1b[33mUsage:\x1b[0m
-  npx kohlrabi <command>
+  npx kohlrabi <command> [options]
 
 \x1b[33mCommands:\x1b[0m
   serve     Start development server with hot reload
   build     Build production-ready static files
   help      Show this help message
 
+\x1b[33mOptions:\x1b[0m
+  --spec, -s <path>   Path to your OpenAPI spec file (JSON or YAML)
+                      Supports multi-file specs with external \$refs
+
 \x1b[33mExamples:\x1b[0m
   npx kohlrabi serve
-  npx kohlrabi build
+  npx kohlrabi serve --spec ./api/openapi.yaml
+  npx kohlrabi build -s ./specs/my-api.yaml
+
+\x1b[33mMulti-file specs:\x1b[0m
+  Kohlrabi automatically resolves external \$refs, so you can use specs like:
+  
+    paths:
+      '/users':
+        \$ref: paths/users.yaml
+      '/orders':
+        \$ref: paths/orders.yaml
 
 \x1b[33mSetup:\x1b[0m
-  1. Place your swagger.json or swagger.yaml in ./public/swagger.json (or .yaml)
+  1. Place your OpenAPI spec (or use --spec to specify location)
   2. Run 'npx kohlrabi serve' to preview
   3. Run 'npx kohlrabi build' to generate static files
 `);
 }
 
 // Main
-const command = process.argv[2];
+const args = parseArgs(process.argv.slice(2));
 
-switch (command) {
+switch (args.command) {
   case 'serve':
   case 'dev':
-    serve().catch(console.error);
+    serve(args.spec).catch(console.error);
     break;
   case 'build':
-    buildDocs().catch(console.error);
+    buildDocs(args.spec).catch(console.error);
     break;
   case 'help':
   case '--help':
   case '-h':
+  case null:
   case undefined:
     showHelp();
     break;
   default:
-    console.error(`\x1b[31mUnknown command: ${command}\x1b[0m`);
+    console.error(`\x1b[31mUnknown command: ${args.command}\x1b[0m`);
     showHelp();
     process.exit(1);
 }

@@ -73,12 +73,48 @@ my-api-docs/
 | Command | Description |
 |---------|-------------|
 | `kohlrabi serve` | Start dev server with hot reload |
+| `kohlrabi serve --spec ./path/to/spec.yaml` | Serve with custom spec path |
 | `kohlrabi build` | Build static files to `./dist` |
+| `kohlrabi build --spec ./api/openapi.yaml` | Build with custom spec path |
 | `kohlrabi help` | Show help message |
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--spec, -s <path>` | Path to your OpenAPI spec file (JSON or YAML) |
+
+## Multi-File OpenAPI Specs
+
+Kohlrabi automatically resolves external `$ref` references, so you can organize your spec across multiple files:
+
+```yaml
+# openapi.yaml
+openapi: 3.1.0
+info:
+  title: My API
+  version: 1.0.0
+paths:
+  '/users':
+    $ref: paths/users.yaml
+  '/orders':
+    $ref: paths/orders.yaml
+components:
+  schemas:
+    User:
+      $ref: schemas/user.yaml
+```
+
+Run with:
+```bash
+npx kohlrabi serve --spec ./openapi.yaml
+```
+
+All referenced files will be bundled automatically.
 
 ## Spec File Locations
 
-The CLI automatically finds your spec in these locations (in order):
+Without `--spec`, the CLI automatically finds your spec in these locations (in order):
 
 **JSON files:**
 1. `./public/swagger.json` ✅ recommended
@@ -86,32 +122,13 @@ The CLI automatically finds your spec in these locations (in order):
 3. `./public/openapi.json`
 4. `./openapi.json`
 
-**YAML files (automatically converted to JSON):**
+**YAML files:**
 5. `./public/swagger.yaml` or `./public/swagger.yml`
 6. `./swagger.yaml` or `./swagger.yml`
 7. `./public/openapi.yaml` or `./public/openapi.yml`
 8. `./openapi.yaml` or `./openapi.yml`
 
-> **Note:** YAML files are automatically converted to JSON during build. If you have both a YAML and JSON file with the same name, the JSON file will be used.
-
-### Converting YAML to JSON Manually
-
-If you prefer to convert YAML to JSON yourself, you can use:
-
-**Using Node.js:**
-```bash
-npx js-yaml swagger.yaml > swagger.json
-```
-
-**Using Python:**
-```bash
-pip install pyyaml
-python -c "import yaml, json; print(json.dumps(yaml.safe_load(open('swagger.yaml')), indent=2))" > swagger.json
-```
-
-**Using online tools:**
-- [Swagger Editor](https://editor.swagger.io/) - Open your YAML and export as JSON
-- [Redocly](https://redocly.com/) - Many renderers allow downloading as JSON
+> **Tip:** Use `--spec` for explicit control over which file to use, especially with multi-file specs.
 
 ## API Switcher
 

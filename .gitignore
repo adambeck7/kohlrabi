@@ -3,6 +3,7 @@ node_modules/
 
 # Build output
 dist/
+.kohlrabi/
 
 # User-specific files (not part of the package)
 public/openapi.json
