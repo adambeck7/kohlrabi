@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Kohlrabi API",
-    "description": "I was tired of paying hundreds of dollars a month for API documentation tools. So I built my own. Just drop your swagger.json into the public folder and run `npx kohlrabi serve` to get started. This is an example API specification to demonstrate the Kohlrabi Docs renderer.\n\n## Getting Started\n\nReplace this file with your own OpenAPI specification to generate beautiful documentation.\n\n## Features\n\n- **Automatic navigation** - Endpoints are grouped by tags\n- **Code examples** - cURL, JavaScript, and Python\n- **Response previews** - See example responses\n- **Mobile responsive** - Works on all devices",
+    "description": "I was tired of paying far too much money for third party API documentation tooling and hosting, so I built my own. I wanted to keep setup and install as simple as possible: \n\n1. Link the repo that hosts your OpenAPI Spec to your host of choice (Cloudflare Pages, Vercel, Netlify, etc.) \n\n2. Set your build command to `npx kohlrabi build --spec ./your-spec.yaml` \n\n3. Set the output/build directory to `dist` \n\nThis is an example API specification to demonstrate the Kohlrabi Docs renderer.\n\n## Features\n\n- **Automatic navigation** - Endpoints are grouped by tags\n- **Code examples** - cURL, JavaScript, and Python\n- **Try It** - Enter your bearer token or Oauth2 creds and make API calls directly from the docs",
     "version": "1.0.0",
     "x-api-family": [
       { "name": "Example API", "url": "/", "current": true }
