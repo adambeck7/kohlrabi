@@ -1,249 +1,70 @@
-# Kohlrabi Docs
+# Kohlrabi
 
-Why Kohlrabi? Broccoli was taken. Modern API documentation from OpenAPI/Swagger specs. Just add your `swagger.json` and go. I've tested with numerous public OpenAPI specs and all rendered perfectly, but if you hit any problems, feel free to open an issue.
+Beautiful API documentation from your OpenAPI spec. Zero config required. Why Kohlrabi? Broccoli was taken. 
 
 ![License](https://img.shields.io/npm/l/kohlrabi)
 ![npm version](https://img.shields.io/npm/v/kohlrabi)
 
 ## Features
 
-- **Zero config** — Just add your OpenAPI spec and run
+- **Zero config** — Point to your OpenAPI spec and go
+- **Try It** — Test API endpoints directly from the docs with OAuth2 support
 - **Code examples** — Auto-generated cURL, JavaScript, and Python snippets
-- **API switcher** — Easy navigation between multiple API docs
-- **Fast** — Built on Vite for instant hot reload during development
+- **Multi-file specs** — Automatically resolves external `$ref` references
+- **Fast** — Built on Vite for instant hot reload
 
 ## Quick Start
 
-### Option 1: npx (No Installation, for local development)
-
 ```bash
-# Create a new project
-mkdir my-api-docs
-cd my-api-docs
-
-# Add your OpenAPI spec
-mkdir public
-cp /path/to/your/swagger.json public/swagger.json
-
-# Start the dev server
+# In your project directory with an OpenAPI spec
 npx kohlrabi serve
 ```
 
-Your docs are now live at `http://localhost:5173`!
+That's it! Your docs are live at `http://localhost:5173`
 
-### Option 2: Install as Dependency
-
-```bash
-npm install kohlrabi
-```
-
-Add to your `package.json`:
-
-```json
-{
-  "scripts": {
-    "dev": "kohlrabi serve",
-    "build": "kohlrabi build"
-  }
-}
-```
-
-Then run:
-
-```bash
-npm run dev    # Development server
-npm run build  # Production build
-```
-
-## 📁 Project Structure
-
-```
-my-api-docs/
-├── public/
-│   └── swagger.json    # Your OpenAPI spec (required)
-├── package.json
-└── dist/               # Generated after build
-    ├── index.html
-    ├── swagger.json
-    └── assets/
-```
-
-## 🛠 Commands
+## Commands
 
 | Command | Description |
 |---------|-------------|
-| `kohlrabi serve` | Start dev server with hot reload |
-| `kohlrabi serve --spec ./path/to/spec.yaml` | Serve with custom spec path |
-| `kohlrabi build` | Build static files to `./dist` |
-| `kohlrabi build --spec ./api/openapi.yaml` | Build with custom spec path |
-| `kohlrabi help` | Show help message |
+| `npx kohlrabi serve` | Start dev server with hot reload |
+| `npx kohlrabi build` | Build static files to `./dist` |
 
-### Options
+### Custom Spec Path
 
-| Option | Description |
-|--------|-------------|
-| `--spec, -s <path>` | Path to your OpenAPI spec file (JSON or YAML) |
-
-## Multi-File OpenAPI Specs
-
-Kohlrabi automatically resolves external `$ref` references, so you can organize your spec across multiple files:
-
-```yaml
-# openapi.yaml
-openapi: 3.1.0
-info:
-  title: My API
-  version: 1.0.0
-paths:
-  '/users':
-    $ref: paths/users.yaml
-  '/orders':
-    $ref: paths/orders.yaml
-components:
-  schemas:
-    User:
-      $ref: schemas/user.yaml
-```
-
-Run with:
 ```bash
-npx kohlrabi serve --spec ./openapi.yaml
+# Serve with a specific spec file
+npx kohlrabi serve --spec ./api/openapi.yaml
+
+# Build with a specific spec file
+npx kohlrabi build --spec ./api/openapi.yaml
 ```
 
-All referenced files will be bundled automatically.
+### Auto-Detection
 
-## Spec File Locations
+Without `--spec`, Kohlrabi looks for your spec in these locations:
 
-Without `--spec`, the CLI automatically finds your spec in these locations (in order):
-
-**JSON files:**
-1. `./public/swagger.json` ✅ recommended
+1. `./public/swagger.json` ← recommended
 2. `./swagger.json`
 3. `./public/openapi.json`
 4. `./openapi.json`
-
-**YAML files:**
-5. `./public/swagger.yaml` or `./public/swagger.yml`
-6. `./swagger.yaml` or `./swagger.yml`
-7. `./public/openapi.yaml` or `./public/openapi.yml`
-8. `./openapi.yaml` or `./openapi.yml`
-
-> **Tip:** Use `--spec` for explicit control over which file to use, especially with multi-file specs.
-
-## API Switcher
-
-Have multiple APIs? Add navigation between them with `x-api-family` in your spec:
-
-```json
-{
-  "openapi": "3.1.0",
-  "info": {
-    "title": "Users API",
-    "version": "1.0.0",
-    "x-api-family": [
-      { "name": "Users API", "url": "/docs/users", "current": true },
-      { "name": "Payments API", "url": "/docs/payments" },
-      { "name": "Analytics API", "url": "/docs/analytics" }
-    ]
-  }
-}
-```
-
-This adds a dropdown to the title, letting users switch between your API docs.
-
----
+5. Same paths with `.yaml` / `.yml` extensions
 
 ## Deployment
 
-After building (`kohlrabi build`), deploy the `./dist` folder to any static host.
+Run `npx kohlrabi build` and deploy the `./dist` folder to any static host.
 
-### One-Click Deploy
+### Cloudflare Pages / Vercel / Netlify
 
-Deploy your own API docs with one click:
+Connect your Git repo and configure:
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/your-org/kohlrabi)
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-org/kohlrabi&project-name=my-api-docs&repository-name=my-api-docs)
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/your-org/kohlrabi)
-
-> **Note:** After deploying, replace `example/swagger.json` with your own OpenAPI spec at `public/swagger.json`.
-
-### Cloudflare Pages
-
-**Option A: Git Integration (Recommended)**
-
-1. Push your project to GitHub/GitLab
-2. Go to [Cloudflare Pages](https://pages.cloudflare.com/) → Create a project
-3. Connect your repository
-4. Configure build settings:
-   - **Build command:** `npx kohlrabi build`
-   - **Build output directory:** `dist`
-5. Deploy!
-
-Your docs will auto-deploy on every push.
-
-**Option B: Direct Upload**
-
-```bash
-# Build locally
-npx kohlrabi build
-
-# Install Wrangler CLI
-npm install -g wrangler
-
-# Login to Cloudflare
-wrangler login
-
-# Deploy
-wrangler pages deploy dist --project-name=my-api-docs
-```
-
-### Vercel
-
-```bash
-# Install Vercel CLI
-npm install -g vercel
-
-# Build and deploy
-npx kohlrabi build
-vercel dist
-```
-
-Or connect your Git repo and set:
-- **Build Command:** `npx kohlrabi build`
-- **Output Directory:** `dist`
-
-### Netlify
-
-**Option A: Drag & Drop**
-
-1. Run `npx kohlrabi build`
-2. Go to [Netlify Drop](https://app.netlify.com/drop)
-3. Drag your `dist` folder
-
-**Option B: Git Integration**
-
-1. Push to GitHub
-2. Connect repo in Netlify
-3. Build settings:
-   - **Build command:** `npx kohlrabi build`
-   - **Publish directory:** `dist`
+- **Build command:** `npx kohlrabi build`
+- **Output directory:** `dist`
 
 ### GitHub Pages
 
-```bash
-# Build
-npx kohlrabi build
-
-# Deploy using gh-pages
-npm install -g gh-pages
-gh-pages -d dist
-```
-
-Or use GitHub Actions:
-
 ```yaml
 # .github/workflows/deploy.yml
-name: Deploy to GitHub Pages
+name: Deploy Docs
 
 on:
   push:
@@ -254,76 +75,83 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
-      - name: Build
-        run: |
-          mkdir -p public
-          cp swagger.json public/swagger.json  # adjust path as needed
-          npx kohlrabi build
-      
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+      - run: npx kohlrabi build
+      - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
 ```
 
-### AWS S3 + CloudFront
-
-```bash
-# Build
-npx kohlrabi build
-
-# Upload to S3
-aws s3 sync dist/ s3://your-bucket-name --delete
-
-# Invalidate CloudFront cache (optional)
-aws cloudfront create-invalidation --distribution-id YOUR_DIST_ID --paths "/*"
-```
-
-### Docker / Self-Hosted
+### Docker
 
 ```dockerfile
-# Dockerfile
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY public/swagger.json public/
+COPY swagger.json ./
 RUN npx kohlrabi build
 
 FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
+```
+
+## Multi-File Specs
+
+Kohlrabi automatically bundles specs with external references:
+
+```yaml
+# openapi.yaml
+paths:
+  '/users':
+    $ref: paths/users.yaml
+  '/orders':
+    $ref: paths/orders.yaml
 ```
 
 ```bash
-docker build -t my-api-docs .
-docker run -p 8080:80 my-api-docs
+npx kohlrabi serve --spec ./openapi.yaml
 ```
 
----
+## OAuth2 / Try It
 
-## Customization
+If your spec includes OAuth2 security schemes, the token URL and scopes are auto-configured:
 
-### Custom Styling (Coming Soon)
+```yaml
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.example.com/oauth/token
+          scopes:
+            read: Read access
+            write: Write access
+```
 
-We're working on theme customization. For now, you can fork the repo and modify `lib/styles.css`.
+Users can enter their Client ID/Secret in the sidebar to generate tokens and test endpoints directly.
 
----
+## API Switcher
 
-## Example
+Link between multiple API docs with `x-api-family`:
 
-Check out the `example/swagger.json` in this repo for a working example spec.
-
----
+```json
+{
+  "info": {
+    "title": "Users API",
+    "x-api-family": [
+      { "name": "Users API", "url": "/docs/users", "current": true },
+      { "name": "Payments API", "url": "/docs/payments" }
+    ]
+  }
+}
+```
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup and release process.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup.
 
 ## License
 
