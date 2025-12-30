@@ -1,42 +1,5 @@
-
-/* CSS Variables */
+/* Layout & Typography Variables (theme-independent) */
 :root {
-  /* Background colors */
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #0f0f17;
-  --bg-tertiary: #15151f;
-  --bg-code: #1a1a24;
-  --bg-hover: #1e1e2a;
-  
-  /* Text colors */
-  --text-primary: #f4f4f5;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
-  
-  /* Accent colors */
-  --accent-primary: #22d3ee;
-  --accent-secondary: #06b6d4;
-  --accent-hover: #67e8f9;
-  
-  /* Method colors */
-  --method-get: #22c55e;
-  --method-post: #3b82f6;
-  --method-put: #f59e0b;
-  --method-patch: #f59e0b;
-  --method-delete: #ef4444;
-  
-  /* Syntax highlighting */
-  --syntax-string: #a5d6ff;
-  --syntax-number: #79c0ff;
-  --syntax-boolean: #ff7b72;
-  --syntax-null: #ff7b72;
-  --syntax-key: #7ee787;
-  --syntax-punctuation: #8b949e;
-  
-  /* Borders */
-  --border-color: #27272a;
-  --border-subtle: #1f1f28;
-  
   /* Layout */
   --sidebar-width: 280px;
   --content-max-width: 1600px;
@@ -188,7 +151,7 @@ body {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 40px var(--shadow-color, rgba(0, 0, 0, 0.4));
   opacity: 0;
   visibility: hidden;
   transform: translateY(-8px);
@@ -1290,16 +1253,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: var(--scrollbar-track, var(--bg-secondary));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: var(--scrollbar-thumb, var(--border-color));
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--scrollbar-thumb-hover, var(--text-muted));
 }
 
 /* Loading State */

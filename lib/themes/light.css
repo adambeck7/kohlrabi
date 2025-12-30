@@ -1,0 +1,47 @@
+/* Light Theme - Kohlrabi API Docs */
+:root {
+  /* Background colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #f1f3f4;
+  --bg-code: #eef1f4;
+  --bg-hover: #e8ebee;
+  
+  /* Text colors */
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  
+  /* Accent colors */
+  --accent-primary: #0891b2;
+  --accent-secondary: #0e7490;
+  --accent-hover: #06b6d4;
+  
+  /* Method colors */
+  --method-get: #16a34a;
+  --method-post: #2563eb;
+  --method-put: #d97706;
+  --method-patch: #d97706;
+  --method-delete: #dc2626;
+  
+  /* Syntax highlighting */
+  --syntax-string: #0550ae;
+  --syntax-number: #0969da;
+  --syntax-boolean: #cf222e;
+  --syntax-null: #cf222e;
+  --syntax-key: #116329;
+  --syntax-punctuation: #57606a;
+  
+  /* Borders */
+  --border-color: #d1d5db;
+  --border-subtle: #e5e7eb;
+  
+  /* Shadows */
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  
+  /* Scrollbar */
+  --scrollbar-track: var(--bg-secondary);
+  --scrollbar-thumb: #c1c7cd;
+  --scrollbar-thumb-hover: #a1a7ad;
+}
+

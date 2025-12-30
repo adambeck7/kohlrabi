@@ -20,9 +20,9 @@ const libDir = resolve(__dirname, '../lib');
 // User's current working directory
 const userDir = process.cwd();
 
-// Parse CLI arguments for --spec flag
+// Parse CLI arguments for --spec and --theme flags
 function parseArgs(args) {
-  const result = { spec: null, command: null };
+  const result = { spec: null, theme: 'dark', command: null };
   
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -34,9 +34,23 @@ function parseArgs(args) {
       result.spec = arg.split('=')[1];
     } else if (arg.startsWith('-s=')) {
       result.spec = arg.split('=')[1];
+    } else if (arg === '--theme' || arg === '-t') {
+      result.theme = args[i + 1];
+      i++; // Skip next arg
+    } else if (arg.startsWith('--theme=')) {
+      result.theme = arg.split('=')[1];
+    } else if (arg.startsWith('-t=')) {
+      result.theme = arg.split('=')[1];
     } else if (!arg.startsWith('-') && !result.command) {
       result.command = arg;
     }
+  }
+  
+  // Validate theme
+  if (!['dark', 'light'].includes(result.theme)) {
+    console.error(`\x1b[31m✖ Invalid theme: ${result.theme}\x1b[0m`);
+    console.error('Available themes: dark, light');
+    process.exit(1);
   }
   
   return result;
@@ -109,7 +123,7 @@ async function bundleSpec(specPath) {
 }
 
 // Vite configuration
-async function createViteConfig(command, specArg = null) {
+async function createViteConfig(command, specArg = null, theme = 'dark') {
   const swaggerPath = findSwaggerFile(specArg);
   
   if (!swaggerPath) {
@@ -128,6 +142,7 @@ async function createViteConfig(command, specArg = null) {
   }
   
   console.log(`\x1b[32m✓\x1b[0m Using spec: ${swaggerPath}`);
+  console.log(`\x1b[32m✓\x1b[0m Using theme: ${theme}`);
   
   // Bundle the spec (resolves all external $refs)
   const bundledPath = await bundleSpec(swaggerPath);
@@ -138,6 +153,10 @@ async function createViteConfig(command, specArg = null) {
   return {
     root: libDir,
     publicDir: publicDir,
+    // Pass theme as environment variable
+    define: {
+      'import.meta.env.VITE_THEME': JSON.stringify(theme),
+    },
     server: {
       open: true,
     },
@@ -162,10 +181,10 @@ async function createViteConfig(command, specArg = null) {
 }
 
 // Commands
-async function serve(specArg) {
+async function serve(specArg, theme) {
   console.log('\n\x1b[36m🚀 Starting API Docs development server...\x1b[0m\n');
   
-  const config = await createViteConfig('serve', specArg);
+  const config = await createViteConfig('serve', specArg, theme);
   const server = await createServer(config);
   await server.listen();
   
@@ -173,10 +192,10 @@ async function serve(specArg) {
   console.log('\n\x1b[2mPress Ctrl+C to stop\x1b[0m\n');
 }
 
-async function buildDocs(specArg) {
+async function buildDocs(specArg, theme) {
   console.log('\n\x1b[36m📦 Building API Docs for production...\x1b[0m\n');
   
-  const config = await createViteConfig('build', specArg);
+  const config = await createViteConfig('build', specArg, theme);
   await build(config);
   
   console.log('\n\x1b[32m✓ Build complete!\x1b[0m Output: ./dist/\n');
@@ -195,13 +214,20 @@ function showHelp() {
   help      Show this help message
 
 \x1b[33mOptions:\x1b[0m
-  --spec, -s <path>   Path to your OpenAPI spec file (JSON or YAML)
-                      Supports multi-file specs with external \$refs
+  --spec, -s <path>     Path to your OpenAPI spec file (JSON or YAML)
+                        Supports multi-file specs with external \$refs
+  --theme, -t <theme>   Color theme: dark (default) or light
 
 \x1b[33mExamples:\x1b[0m
   npx kohlrabi serve
+  npx kohlrabi serve --theme light
   npx kohlrabi serve --spec ./api/openapi.yaml
-  npx kohlrabi build -s ./specs/my-api.yaml
+  npx kohlrabi build -s ./specs/my-api.yaml --theme light
+  npx kohlrabi build -t dark
+
+\x1b[33mThemes:\x1b[0m
+  dark      Dark background with light text (default)
+  light     Light background with dark text
 
 \x1b[33mMulti-file specs:\x1b[0m
   Kohlrabi automatically resolves external \$refs, so you can use specs like:
@@ -225,10 +251,10 @@ const args = parseArgs(process.argv.slice(2));
 switch (args.command) {
   case 'serve':
   case 'dev':
-    serve(args.spec).catch(console.error);
+    serve(args.spec, args.theme).catch(console.error);
     break;
   case 'build':
-    buildDocs(args.spec).catch(console.error);
+    buildDocs(args.spec, args.theme).catch(console.error);
     break;
   case 'help':
   case '--help':
