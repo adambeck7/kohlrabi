@@ -20,9 +20,9 @@ const libDir = resolve(__dirname, '../lib');
 // User's current working directory
 const userDir = process.cwd();
 
-// Parse CLI arguments for --spec and --theme flags
+// Parse CLI arguments for --spec, --theme, and --theme-overrides flags
 function parseArgs(args) {
-  const result = { spec: null, theme: 'dark', command: null };
+  const result = { spec: null, theme: 'dark', themeOverrides: null, command: null };
   
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -41,6 +41,13 @@ function parseArgs(args) {
       result.theme = arg.split('=')[1];
     } else if (arg.startsWith('-t=')) {
       result.theme = arg.split('=')[1];
+    } else if (arg === '--theme-overrides' || arg === '-o') {
+      result.themeOverrides = args[i + 1];
+      i++; // Skip next arg
+    } else if (arg.startsWith('--theme-overrides=')) {
+      result.themeOverrides = arg.split('=')[1];
+    } else if (arg.startsWith('-o=')) {
+      result.themeOverrides = arg.split('=')[1];
     } else if (!arg.startsWith('-') && !result.command) {
       result.command = arg;
     }
@@ -51,6 +58,18 @@ function parseArgs(args) {
     console.error(`\x1b[31m✖ Invalid theme: ${result.theme}\x1b[0m`);
     console.error('Available themes: dark, light');
     process.exit(1);
+  }
+  
+  // Validate theme overrides file exists if provided
+  if (result.themeOverrides) {
+    const overridesPath = isAbsolute(result.themeOverrides) 
+      ? result.themeOverrides 
+      : join(userDir, result.themeOverrides);
+    if (!existsSync(overridesPath)) {
+      console.error(`\x1b[31m✖ Theme overrides file not found: ${overridesPath}\x1b[0m`);
+      process.exit(1);
+    }
+    result.themeOverrides = overridesPath;
   }
   
   return result;
@@ -123,7 +142,7 @@ async function bundleSpec(specPath) {
 }
 
 // Vite configuration
-async function createViteConfig(command, specArg = null, theme = 'dark') {
+async function createViteConfig(command, specArg = null, theme = 'dark', themeOverrides = null) {
   const swaggerPath = findSwaggerFile(specArg);
   
   if (!swaggerPath) {
@@ -150,12 +169,21 @@ async function createViteConfig(command, specArg = null, theme = 'dark') {
   // Use .kohlrabi directory as public dir to serve bundled spec
   const publicDir = join(userDir, '.kohlrabi');
   
+  // Copy theme overrides to .kohlrabi if provided
+  const hasThemeOverrides = !!themeOverrides;
+  if (hasThemeOverrides) {
+    const overridesDestPath = join(publicDir, 'theme-overrides.css');
+    copyFileSync(themeOverrides, overridesDestPath);
+    console.log(`\x1b[32m✓\x1b[0m Using theme overrides: ${themeOverrides}`);
+  }
+  
   return {
     root: libDir,
     publicDir: publicDir,
-    // Pass theme as environment variable
+    // Pass theme and overrides flag as environment variables
     define: {
       'import.meta.env.VITE_THEME': JSON.stringify(theme),
+      'import.meta.env.VITE_THEME_OVERRIDES': JSON.stringify(hasThemeOverrides),
     },
     server: {
       open: true,
@@ -164,9 +192,9 @@ async function createViteConfig(command, specArg = null, theme = 'dark') {
       outDir: join(userDir, 'dist'),
       emptyOutDir: true,
     },
-    // Copy swagger to dist as swagger.json regardless of original name
+    // Copy swagger and theme overrides to dist
     plugins: command === 'build' ? [{
-      name: 'copy-swagger',
+      name: 'copy-assets',
       closeBundle() {
         const destDir = join(userDir, 'dist');
         if (!existsSync(destDir)) {
@@ -175,16 +203,22 @@ async function createViteConfig(command, specArg = null, theme = 'dark') {
         // Use the bundled spec
         copyFileSync(bundledPath, join(destDir, 'swagger.json'));
         console.log('\x1b[32m✓\x1b[0m Copied bundled swagger.json to dist/');
+        
+        // Copy theme overrides if present
+        if (hasThemeOverrides) {
+          copyFileSync(themeOverrides, join(destDir, 'theme-overrides.css'));
+          console.log('\x1b[32m✓\x1b[0m Copied theme-overrides.css to dist/');
+        }
       }
     }] : [],
   };
 }
 
 // Commands
-async function serve(specArg, theme) {
+async function serve(specArg, theme, themeOverrides) {
   console.log('\n\x1b[36m🚀 Starting API Docs development server...\x1b[0m\n');
   
-  const config = await createViteConfig('serve', specArg, theme);
+  const config = await createViteConfig('serve', specArg, theme, themeOverrides);
   const server = await createServer(config);
   await server.listen();
   
@@ -192,10 +226,10 @@ async function serve(specArg, theme) {
   console.log('\n\x1b[2mPress Ctrl+C to stop\x1b[0m\n');
 }
 
-async function buildDocs(specArg, theme) {
+async function buildDocs(specArg, theme, themeOverrides) {
   console.log('\n\x1b[36m📦 Building API Docs for production...\x1b[0m\n');
   
-  const config = await createViteConfig('build', specArg, theme);
+  const config = await createViteConfig('build', specArg, theme, themeOverrides);
   await build(config);
   
   console.log('\n\x1b[32m✓ Build complete!\x1b[0m Output: ./dist/\n');
@@ -214,20 +248,33 @@ function showHelp() {
   help      Show this help message
 
 \x1b[33mOptions:\x1b[0m
-  --spec, -s <path>     Path to your OpenAPI spec file (JSON or YAML)
-                        Supports multi-file specs with external \$refs
-  --theme, -t <theme>   Color theme: dark (default) or light
+  --spec, -s <path>            Path to your OpenAPI spec file (JSON or YAML)
+                               Supports multi-file specs with external \$refs
+  --theme, -t <theme>          Color theme: dark (default) or light
+  --theme-overrides, -o <path> Custom CSS file to override theme colors
 
 \x1b[33mExamples:\x1b[0m
   npx kohlrabi serve
   npx kohlrabi serve --theme light
   npx kohlrabi serve --spec ./api/openapi.yaml
   npx kohlrabi build -s ./specs/my-api.yaml --theme light
-  npx kohlrabi build -t dark
+  npx kohlrabi build --theme dark --theme-overrides ./brand.css
 
 \x1b[33mThemes:\x1b[0m
   dark      Dark background with light text (default)
   light     Light background with dark text
+
+\x1b[33mCustom Brand Colors:\x1b[0m
+  Override any theme colors with a custom CSS file:
+  
+    /* brand.css */
+    :root {
+      --accent-primary: #ff6b00;
+      --accent-secondary: #e55d00;
+      --method-get: #00b894;
+    }
+  
+  Use with: npx kohlrabi build --theme light -o ./brand.css
 
 \x1b[33mMulti-file specs:\x1b[0m
   Kohlrabi automatically resolves external \$refs, so you can use specs like:
@@ -251,10 +298,10 @@ const args = parseArgs(process.argv.slice(2));
 switch (args.command) {
   case 'serve':
   case 'dev':
-    serve(args.spec, args.theme).catch(console.error);
+    serve(args.spec, args.theme, args.themeOverrides).catch(console.error);
     break;
   case 'build':
-    buildDocs(args.spec, args.theme).catch(console.error);
+    buildDocs(args.spec, args.theme, args.themeOverrides).catch(console.error);
     break;
   case 'help':
   case '--help':

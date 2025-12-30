@@ -10,6 +10,7 @@ Beautiful API documentation from your OpenAPI spec. Zero config required. Why Ko
 - **Zero config** — Point to your OpenAPI spec and go
 - **Try It** — Test API endpoints directly from the docs with OAuth2 support
 - **Code examples** — Auto-generated cURL, JavaScript, and Python snippets
+- **Themes** — Dark and light themes with custom theme support
 - **Multi-file specs** — Automatically resolves external `$ref` references
 - **Fast** — Built on Vite for instant hot reload
 
@@ -28,6 +29,14 @@ That's it! Your docs are live at `http://localhost:5173`
 |---------|-------------|
 | `npx kohlrabi serve` | Start dev server with hot reload |
 | `npx kohlrabi build` | Build static files to `./dist` |
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--spec, -s <path>` | Path to OpenAPI spec file |
+| `--theme, -t <theme>` | Theme: `dark` (default) or `light` |
+| `--theme-overrides, -o <path>` | Custom CSS file with brand colors |
 
 ### Custom Spec Path
 
@@ -57,7 +66,7 @@ Run `npx kohlrabi build` and deploy the `./dist` folder to any static host.
 
 Connect your Git repo and configure:
 
-- **Build command:** `npx kohlrabi build`
+- **Build command:** `npx kohlrabi build` (or with theme: `npx kohlrabi build --theme light -o ./brand.css`)
 - **Output directory:** `dist`
 
 ### GitHub Pages
@@ -78,7 +87,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npx kohlrabi build
+      - run: npx kohlrabi build --theme light --theme-overrides ./brand.css
       - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -90,12 +99,56 @@ jobs:
 ```dockerfile
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY swagger.json ./
-RUN npx kohlrabi build
+COPY swagger.json brand.css ./
+RUN npx kohlrabi build --theme light --theme-overrides ./brand.css
 
 FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 ```
+
+## Themes & Custom Branding
+
+Kohlrabi includes dark and light themes, plus support for custom brand colors.
+
+### Built-in Themes
+
+```bash
+# Dark theme (default)
+npx kohlrabi build
+
+# Light theme
+npx kohlrabi build --theme light
+```
+
+### Custom Brand Colors
+
+Create a CSS file with your brand colors and pass it with `--theme-overrides`:
+
+```css
+/* brand.css */
+:root {
+  --accent-primary: #ff6b00;
+  --accent-secondary: #e55d00;
+  --accent-hover: #ff8533;
+}
+```
+
+```bash
+npx kohlrabi build --theme light --theme-overrides ./brand.css
+```
+
+Override as few or as many variables as you like. The rest inherit from the base theme.
+
+### Available CSS Variables
+
+| Category | Variables |
+|----------|-----------|
+| Backgrounds | `--bg-primary`, `--bg-secondary`, `--bg-tertiary`, `--bg-code`, `--bg-hover` |
+| Text | `--text-primary`, `--text-secondary`, `--text-muted` |
+| Accents | `--accent-primary`, `--accent-secondary`, `--accent-hover` |
+| HTTP Methods | `--method-get`, `--method-post`, `--method-put`, `--method-patch`, `--method-delete` |
+| Syntax | `--syntax-string`, `--syntax-number`, `--syntax-boolean`, `--syntax-null`, `--syntax-key` |
+| Borders | `--border-color`, `--border-subtle` |
 
 ## Multi-File Specs
 
