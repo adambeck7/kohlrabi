@@ -14,6 +14,20 @@ Beautiful API documentation from your OpenAPI spec. Zero config required. Why Ko
 - **Multi-file specs** — Automatically resolves external `$ref` references
 - **Fast** — Built on Vite for instant hot reload
 
+## How Kohlrabi Compares
+
+| Feature | Kohlrabi | Scalar | Swagger UI | Stoplight Elements |
+|---------|:--------:|:------:|:----------:|:------------------:|
+| Modern UI | ✅ | ✅ | ❌ | ❌ |
+| Themeable | ✅ | ✅ | ❌ | ❌ |
+| Zero Config | ✅ | ❌ | ❌ | ❌ |
+| Code Snippets | ✅ | ✅ | ❌ | ✅ |
+| OAuth2 & Bearer Token | ✅ | ✅ | ✅ | ✅ |
+| No Attribution Required | ✅ | ❌ | ❌ | ❌ |
+| License | MIT | MIT | Apache 2.0 | Apache 2.0 |
+
+**Zero Config** means no `index.html` boilerplate — just point to your spec and go.
+
 ## Quick Start
 
 ```bash
