@@ -33,7 +33,7 @@
       "get": {
         "tags": ["Users"],
         "summary": "List all users",
-        "description": "Returns a paginated list of all users in the system. Results are sorted by creation date, newest first.",
+        "description": "Returns a paginated list of all users in the system. Results are sorted by creation date, newest first.\n\n## Example Response\n\n```json\n{\n  \"users\": [\n    {\n      \"id\": 123,\n      \"name\": \"John Doe\",\n      \"active\": true\n    }\n  ],\n  \"total\": 1,\n  \"hasMore\": false\n}\n```",
         "operationId": "listUsers",
         "parameters": [
           {

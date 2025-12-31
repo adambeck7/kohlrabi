@@ -31,6 +31,11 @@
   --syntax-null: #ff7b72;
   --syntax-key: #7ee787;
   --syntax-punctuation: #8b949e;
+  --syntax-keyword: #ff7b72;
+  --syntax-comment: #8b949e;
+  --syntax-function: #d2a8ff;
+  --syntax-builtin: #ffa657;
+  --syntax-decorator: #ffa657;
   
   /* Borders */
   --border-color: #27272a;

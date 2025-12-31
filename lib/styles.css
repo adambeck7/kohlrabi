@@ -1063,6 +1063,31 @@ body {
 .json-null { color: var(--syntax-null); }
 .json-punctuation { color: var(--syntax-punctuation); }
 
+/* Shell/cURL Syntax Highlighting */
+.sh-command { color: var(--syntax-keyword, #ff7b72); font-weight: 500; }
+.sh-string { color: var(--syntax-string); }
+.sh-flag { color: var(--syntax-key); }
+.sh-method { color: var(--syntax-keyword, #ff7b72); font-weight: 600; }
+.sh-escape { color: var(--syntax-punctuation); }
+
+/* JavaScript Syntax Highlighting */
+.js-keyword { color: var(--syntax-keyword, #ff7b72); }
+.js-string { color: var(--syntax-string); }
+.js-number { color: var(--syntax-number); }
+.js-comment { color: var(--syntax-comment, #8b949e); font-style: italic; }
+.js-builtin { color: var(--syntax-builtin, #ffa657); }
+.js-function { color: var(--syntax-function, #d2a8ff); }
+.js-property { color: var(--syntax-key); }
+
+/* Python Syntax Highlighting */
+.py-keyword { color: var(--syntax-keyword, #ff7b72); }
+.py-string { color: var(--syntax-string); }
+.py-number { color: var(--syntax-number); }
+.py-comment { color: var(--syntax-comment, #8b949e); font-style: italic; }
+.py-builtin { color: var(--syntax-builtin, #ffa657); }
+.py-function { color: var(--syntax-function, #d2a8ff); }
+.py-decorator { color: var(--syntax-decorator, #ffa657); }
+
 /* Responses Section */
 .responses-section {
   margin-top: 2rem;
