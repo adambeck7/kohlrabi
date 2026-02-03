@@ -10,6 +10,7 @@ Beautiful API documentation from your OpenAPI spec. Zero config required. Why Ko
 - **Zero config** — Point to your OpenAPI spec and go
 - **Try It** — Test API endpoints directly from the docs with OAuth2 support
 - **Code examples** — Auto-generated cURL, JavaScript, and Python snippets
+- **SDK Generation** — Generate client SDKs in TypeScript, Python, Go, Java, Ruby, and C#
 - **Themes** — Dark and light themes with custom theme support
 - **Multi-file specs** — Automatically resolves external `$ref` references
 - **Fast** — Built on Vite for instant hot reload
@@ -43,6 +44,7 @@ That's it! Your docs are live at `http://localhost:5173`
 |---------|-------------|
 | `npx kohlrabi serve` | Start dev server with hot reload |
 | `npx kohlrabi build` | Build static files to `./dist` |
+| `npx kohlrabi sdk` | Generate client SDKs using Fern |
 
 ### Options
 
@@ -51,6 +53,8 @@ That's it! Your docs are live at `http://localhost:5173`
 | `--spec, -s <path>` | Path to OpenAPI spec file |
 | `--theme, -t <theme>` | Theme: `dark` (default) or `light` |
 | `--theme-overrides, -o <path>` | Custom CSS file with brand colors |
+| `--language, -l <langs>` | SDK languages (comma-separated) |
+| `--output, -O <path>` | SDK output directory |
 
 ### Custom Spec Path
 
@@ -215,6 +219,132 @@ Link between multiple API docs with `x-api-family`:
   }
 }
 ```
+
+## SDK Generation
+
+Generate type-safe client SDKs from your OpenAPI spec using [Fern](https://github.com/fern-api/fern). Fern is automatically downloaded via npx — no separate installation required.
+
+### Quick Start
+
+```bash
+# Generate a TypeScript SDK
+npx kohlrabi sdk --language typescript
+
+# Generate multiple SDKs
+npx kohlrabi sdk -l typescript,python,go
+
+# Custom spec and output
+npx kohlrabi sdk --spec ./api.yaml -l python -O ./my-sdks
+```
+
+### Available Languages
+
+| Language | Registry |
+|----------|----------|
+| `typescript` | npm |
+| `python` | PyPI |
+| `java` | Maven Central |
+| `go` | GitHub releases |
+| `ruby` | RubyGems |
+| `csharp` | NuGet |
+
+### Output Structure
+
+```
+sdk-output/
+├── fern/
+│   ├── fern.config.json
+│   ├── generators.yml
+│   └── openapi/
+│       └── openapi.json
+├── sdks/
+│   ├── typescript/
+│   ├── python/
+│   └── go/
+└── SDK_README.md
+```
+
+### Publishing to npm
+
+```bash
+cd sdk-output/sdks/typescript
+npm publish
+```
+
+### Publishing to PyPI
+
+```bash
+cd sdk-output/sdks/python
+pip install build twine
+python -m build
+twine upload dist/*
+```
+
+### GitHub Actions Workflow
+
+Automatically publish SDKs when you create a release:
+
+```yaml
+# .github/workflows/sdk.yml
+name: Publish SDKs
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish-typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      
+      - name: Generate SDK
+        run: |
+          npm install -g fern-api
+          npx kohlrabi sdk -l typescript
+      
+      - name: Publish to npm
+        working-directory: sdk-output/sdks/typescript
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Generate SDK
+        run: |
+          npm install -g fern-api
+          npx kohlrabi sdk -l python
+      
+      - name: Publish to PyPI
+        working-directory: sdk-output/sdks/python
+        run: |
+          pip install build twine
+          python -m build
+          twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+```
+
+### Attribution
+
+SDK generation is powered by [Fern](https://github.com/fern-api/fern), licensed under Apache 2.0.
+See [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) for details.
 
 ## Contributing
 
