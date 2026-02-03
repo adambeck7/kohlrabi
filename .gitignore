@@ -5,6 +5,7 @@ node_modules/
 dist/
 .kohlrabi/
 sdk-output/
+src/
 
 # User-specific files (not part of the package)
 public/openapi.json
