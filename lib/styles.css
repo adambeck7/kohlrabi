@@ -1610,3 +1610,235 @@ body {
   flex-shrink: 0;
 }
 
+/* ============================================
+   SDK Generator Section
+   ============================================ */
+
+.sdk-generator-section {
+  margin: 0.75rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sdk-generator-section.collapsed .sdk-generator-content {
+  display: none;
+}
+
+.sdk-generator-section.collapsed .sdk-generator-arrow {
+  transform: rotate(-90deg);
+}
+
+.sdk-generator-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.sdk-generator-header:hover {
+  background: var(--bg-hover);
+}
+
+.sdk-generator-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.sdk-generator-title svg {
+  color: var(--accent-color);
+}
+
+.sdk-generator-arrow {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  transition: transform var(--transition-fast);
+}
+
+.sdk-generator-content {
+  padding: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.sdk-generator-description {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.sdk-generator-description a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+.sdk-generator-description a:hover {
+  text-decoration: underline;
+}
+
+/* Language Grid */
+.sdk-language-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.sdk-language-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.sdk-language-option:hover {
+  border-color: var(--accent-color);
+  background: var(--bg-hover);
+}
+
+.sdk-language-option.selected {
+  border-color: var(--accent-color);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.sdk-language-option input[type="checkbox"] {
+  display: none;
+}
+
+.sdk-language-icon {
+  font-size: 1rem;
+}
+
+.sdk-language-name {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* SDK Actions */
+.sdk-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.sdk-download-btn,
+.sdk-copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.sdk-download-btn {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+.sdk-download-btn:hover {
+  opacity: 0.9;
+}
+
+.sdk-download-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sdk-download-btn.loading::after {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.sdk-copy-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.sdk-copy-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+}
+
+/* CLI Preview */
+.sdk-cli-preview {
+  background: var(--bg-code);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.sdk-cli-header {
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.sdk-cli-code {
+  padding: 0.75rem;
+  margin: 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.sdk-cli-code code {
+  display: block;
+  white-space: pre;
+}
+
+/* Attribution */
+.sdk-attribution {
+  text-align: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.sdk-attribution small {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.sdk-attribution a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+.sdk-attribution a:hover {
+  text-decoration: underline;
+}
+
