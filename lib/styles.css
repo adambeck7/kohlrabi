@@ -103,11 +103,32 @@ body {
   letter-spacing: -0.02em;
 }
 
+.api-version-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
 .api-version {
   font-size: 0.75rem;
   color: var(--text-muted);
-  margin-top: 0.25rem;
   font-family: var(--font-mono);
+}
+
+.spec-download-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.spec-download-link:hover {
+  color: var(--accent-primary);
 }
 
 /* API Switcher */
