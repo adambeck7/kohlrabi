@@ -162,25 +162,159 @@ function findSwaggerFile(specPath = null) {
   return null;
 }
 
-// Bundle and dereference the OpenAPI spec (resolves all $refs including external files)
+// Resolve a JSON pointer (e.g. "#/paths/~1users/get/...") against a spec object
+function resolveJsonPointer(spec, pointer) {
+  const parts = pointer.replace(/^#\//, '').split('/');
+  let result = spec;
+  for (const part of parts) {
+    const key = part.replace(/~1/g, '/').replace(/~0/g, '~');
+    result = result?.[key];
+  }
+  return result;
+}
+
+// Derive a schema name from a path-based $ref like "#/paths/~1users/post/requestBody/..."
+function schemaNameFromPathRef(ref) {
+  const parts = ref.replace(/^#\//, '').split('/');
+  const segments = [];
+
+  // Extract the resource name from paths/ or webhooks/
+  const pathIdx = parts.indexOf('paths');
+  const webhookIdx = parts.indexOf('webhooks');
+
+  if (pathIdx !== -1 && parts[pathIdx + 1]) {
+    const pathName = decodeURIComponent(parts[pathIdx + 1])
+      .replace(/~1/g, '/')
+      .replace(/~0/g, '~')
+      .replace(/^\//, '')
+      .split('/')
+      .map(s => s.replace(/[{}]/g, ''))
+      .filter(Boolean)
+      .map(s => s.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(''))
+      .join('');
+    if (pathName) segments.push(pathName);
+  } else if (webhookIdx !== -1 && parts[webhookIdx + 1]) {
+    const name = parts[webhookIdx + 1];
+    segments.push(name.charAt(0).toUpperCase() + name.slice(1));
+  }
+
+  // Extract HTTP method
+  const methods = ['get', 'post', 'put', 'patch', 'delete'];
+  const method = parts.find(p => methods.includes(p));
+  if (method) segments.push(method.charAt(0).toUpperCase() + method.slice(1));
+
+  // Check for x-webhook-payloads or similar extensions
+  const xPayloadIdx = parts.indexOf('x-webhook-payloads');
+  if (xPayloadIdx !== -1 && parts[xPayloadIdx + 1]) {
+    segments.push(parts[xPayloadIdx + 1]);
+  }
+
+  // Determine if it's a request or response schema
+  if (parts.includes('requestBody')) {
+    segments.push('Request');
+  } else if (parts.includes('responses')) {
+    const respIdx = parts.indexOf('responses');
+    const statusCode = parts[respIdx + 1];
+    if (statusCode) segments.push(statusCode);
+    segments.push('Response');
+  }
+
+  return segments.join('') || 'InlineSchema';
+}
+
+// After bundling, promote any schemas referenced via path-based $refs to components/schemas
+function promoteInlineSchemas(spec) {
+  if (!spec.components) spec.components = {};
+  if (!spec.components.schemas) spec.components.schemas = {};
+
+  // Find all $ref pointers that target non-component paths
+  const refsToPromote = new Map(); // oldRef -> newSchemaName
+
+  function findPathRefs(obj) {
+    if (!obj || typeof obj !== 'object') return;
+    if (obj.$ref && typeof obj.$ref === 'string' &&
+        obj.$ref.startsWith('#/') && !obj.$ref.startsWith('#/components/')) {
+      if (!refsToPromote.has(obj.$ref)) {
+        let name = schemaNameFromPathRef(obj.$ref);
+        // Ensure uniqueness
+        let uniqueName = name;
+        let counter = 2;
+        while (spec.components.schemas[uniqueName]) {
+          uniqueName = name + counter++;
+        }
+        refsToPromote.set(obj.$ref, uniqueName);
+      }
+    }
+    for (const [key, value] of Object.entries(obj)) {
+      if (key !== '$ref' && typeof value === 'object') findPathRefs(value);
+    }
+  }
+
+  findPathRefs(spec);
+
+  if (refsToPromote.size === 0) return spec;
+
+  // Copy each referenced schema into components/schemas
+  for (const [oldRef, schemaName] of refsToPromote) {
+    const schema = resolveJsonPointer(spec, oldRef);
+    if (schema) {
+      spec.components.schemas[schemaName] = JSON.parse(JSON.stringify(schema));
+    }
+  }
+
+  // Update all $ref pointers to use the new component paths
+  function updateRefs(obj) {
+    if (!obj || typeof obj !== 'object') return;
+    if (obj.$ref && refsToPromote.has(obj.$ref)) {
+      obj.$ref = `#/components/schemas/${refsToPromote.get(obj.$ref)}`;
+    }
+    for (const value of Object.values(obj)) {
+      if (typeof value === 'object') updateRefs(value);
+    }
+  }
+
+  updateRefs(spec);
+
+  // Also replace the original inline location with a $ref to the component
+  for (const [oldRef, schemaName] of refsToPromote) {
+    const parts = oldRef.replace(/^#\//, '').split('/');
+    let parent = spec;
+    for (let i = 0; i < parts.length - 1; i++) {
+      const key = parts[i].replace(/~1/g, '/').replace(/~0/g, '~');
+      parent = parent?.[key];
+    }
+    if (parent) {
+      const lastKey = parts[parts.length - 1].replace(/~1/g, '/').replace(/~0/g, '~');
+      parent[lastKey] = { $ref: `#/components/schemas/${schemaName}` };
+    }
+  }
+
+  return spec;
+}
+
+// Bundle the OpenAPI spec into a single file, preserving $ref structure
 async function bundleSpec(specPath) {
   try {
     console.log(`\x1b[33m→\x1b[0m Bundling spec and resolving \$refs...`);
-    
-    // Use swagger-parser to dereference all $refs (including external file refs)
+
+    // Bundle: resolves external $refs into a single file, preserves internal $ref pointers
     const bundled = await SwaggerParser.bundle(specPath);
-    
-    // Write bundled spec to .kohlrabi/ for serving (named swagger.json for consistency)
+
+    // Post-process: promote any path-based $refs (e.g. #/paths/~1users/post/...)
+    // to clean #/components/schemas/... refs
+    promoteInlineSchemas(bundled);
+
+    // Write bundled spec to .kohlrabi/ for serving
     const bundledPath = join(userDir, '.kohlrabi', 'swagger.json');
     const bundledDir = dirname(bundledPath);
-    
+
     if (!existsSync(bundledDir)) {
       mkdirSync(bundledDir, { recursive: true });
     }
-    
+
     writeFileSync(bundledPath, JSON.stringify(bundled, null, 2));
-    console.log(`\x1b[32m✓\x1b[0m Bundled spec with all \$refs resolved`);
-    
+    console.log(`\x1b[32m✓\x1b[0m Bundled spec with \$ref structure preserved`);
+
     return bundledPath;
   } catch (error) {
     console.error(`\x1b[31m✖ Failed to bundle spec: ${error.message}\x1b[0m`);
