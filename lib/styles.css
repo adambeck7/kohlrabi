@@ -1354,6 +1354,98 @@ body {
   max-width: 700px;
 }
 
+/* Guide/documentation-only sections */
+.guide-content {
+  padding: 1.5rem 3rem 2rem;
+  max-width: 900px;
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+
+.guide-content h1 {
+  display: none; /* Hide h1 since tag-title already shows the name */
+}
+
+.guide-content h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+.guide-content h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.guide-content p {
+  margin-bottom: 0.75rem;
+}
+
+.guide-content ul, .guide-content ol {
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.guide-content li {
+  margin-bottom: 0.25rem;
+}
+
+.guide-content pre {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.guide-content code {
+  background: var(--bg-tertiary);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+.guide-content pre code {
+  background: none;
+  padding: 0;
+}
+
+/* Markdown tables */
+.markdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.markdown-table th,
+.markdown-table td {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.markdown-table th {
+  background: var(--bg-tertiary);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.markdown-table td {
+  color: var(--text-secondary);
+}
+
+.markdown-table tr:hover td {
+  background: var(--bg-secondary);
+}
+
 /* Try It Panel */
 .try-it-section {
   margin-top: 1.5rem;
