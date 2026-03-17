@@ -11,7 +11,7 @@
 import { createServer, build } from 'vite';
 import { fileURLToPath } from 'url';
 import { dirname, resolve, join, isAbsolute, basename } from 'path';
-import { existsSync, copyFileSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'fs';
+import { existsSync, copyFileSync, mkdirSync, readFileSync, writeFileSync, rmSync, readdirSync } from 'fs';
 import { execSync, spawn } from 'child_process';
 import SwaggerParser from '@apidevtools/swagger-parser';
 
@@ -314,6 +314,23 @@ async function bundleSpec(specPath) {
 
     writeFileSync(bundledPath, JSON.stringify(bundled, null, 2));
     console.log(`\x1b[32m✓\x1b[0m Bundled spec with \$ref structure preserved`);
+
+    // Copy images from the spec directory to .kohlrabi/ for serving
+    const specDir = dirname(specPath);
+    const imagesDir = join(specDir, 'images');
+    if (existsSync(imagesDir)) {
+      const destImagesDir = join(bundledDir, 'images');
+      if (!existsSync(destImagesDir)) {
+        mkdirSync(destImagesDir, { recursive: true });
+      }
+      const imageFiles = readdirSync(imagesDir);
+      for (const file of imageFiles) {
+        copyFileSync(join(imagesDir, file), join(destImagesDir, file));
+      }
+      if (imageFiles.length > 0) {
+        console.log(`\x1b[32m✓\x1b[0m Copied ${imageFiles.length} image(s) to serve`);
+      }
+    }
 
     return bundledPath;
   } catch (error) {
