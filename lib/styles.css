@@ -1355,6 +1355,14 @@ body {
   max-width: 700px;
 }
 
+.tag-description p {
+  margin: 0;
+}
+
+.tag-guide-content {
+  border-bottom: 1px solid var(--border-color);
+}
+
 /* Guide/documentation-only sections */
 .guide-content {
   padding: 1.5rem 3rem 2rem;
@@ -2232,4 +2240,3 @@ body {
 .sdk-attribution a:hover {
   text-decoration: underline;
 }
-

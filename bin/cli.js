@@ -292,10 +292,54 @@ function promoteInlineSchemas(spec) {
   return spec;
 }
 
+function isMarkdownFileReference(value) {
+  return typeof value === 'string' &&
+    /^[^\s]+\.md(?:[#?].*)?$/i.test(value.trim());
+}
+
+function resolveMarkdownDescriptionPaths(spec, specDir) {
+  const missingMarkdownFiles = new Map();
+
+  function visit(obj) {
+    if (!obj || typeof obj !== 'object') return;
+
+    if (Array.isArray(obj)) {
+      for (const item of obj) {
+        visit(item);
+      }
+      return;
+    }
+
+    for (const [key, value] of Object.entries(obj)) {
+      if (key === 'description' && isMarkdownFileReference(value)) {
+        const refPath = value.trim().split(/[?#]/)[0];
+        const markdownPath = isAbsolute(refPath) ? refPath : join(specDir, refPath);
+
+        if (existsSync(markdownPath)) {
+          obj[key] = readFileSync(markdownPath, 'utf8');
+        } else {
+          missingMarkdownFiles.set(value.trim(), markdownPath);
+        }
+      } else if (value && typeof value === 'object') {
+        visit(value);
+      }
+    }
+  }
+
+  visit(spec);
+
+  for (const [ref, markdownPath] of missingMarkdownFiles) {
+    console.warn(`\x1b[33m!\x1b[0m Markdown description file not found: ${ref} (${markdownPath})`);
+  }
+
+  return spec;
+}
+
 // Bundle the OpenAPI spec into a single file, preserving $ref structure
 async function bundleSpec(specPath) {
   try {
     console.log(`\x1b[33m→\x1b[0m Bundling spec and resolving \$refs...`);
+    const specDir = dirname(specPath);
 
     // Bundle: resolves external $refs into a single file, preserves internal $ref pointers
     const bundled = await SwaggerParser.bundle(specPath);
@@ -303,6 +347,10 @@ async function bundleSpec(specPath) {
     // Post-process: promote any path-based $refs (e.g. #/paths/~1users/post/...)
     // to clean #/components/schemas/... refs
     promoteInlineSchemas(bundled);
+
+    // Also support shorthand markdown descriptions, e.g. description: docs/intro.md.
+    // YAML $ref descriptions are handled by swagger-parser above.
+    resolveMarkdownDescriptionPaths(bundled, specDir);
 
     // Write bundled spec to .kohlrabi/ for serving
     const bundledPath = join(userDir, '.kohlrabi', 'swagger.json');
@@ -316,7 +364,6 @@ async function bundleSpec(specPath) {
     console.log(`\x1b[32m✓\x1b[0m Bundled spec with \$ref structure preserved`);
 
     // Copy images from the spec directory to .kohlrabi/ for serving
-    const specDir = dirname(specPath);
     const imagesDir = join(specDir, 'images');
     if (existsSync(imagesDir)) {
       const destImagesDir = join(bundledDir, 'images');
@@ -944,4 +991,3 @@ switch (args.command) {
     showHelp();
     process.exit(1);
 }
-
